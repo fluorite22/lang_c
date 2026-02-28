@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Треугольники - BGI to JS</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: #fff;
+        }
+        .info {
+            margin-top: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="400" height="300"></canvas>
+    <div class="info">Нажмите любую клавишу для продолжения...</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Функция для создания треугольника (аналог Tr)
+        function Tr(x, y, color) {
+            // Рисуем контур треугольника белым цветом
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 1;
+            
+            ctx.beginPath();
+            ctx.moveTo(x, y);              // левый нижний угол
+            ctx.lineTo(x, y - 60);          // вверх
+            ctx.lineTo(x + 100, y);         // вправо вниз
+            ctx.lineTo(x, y);               // обратно к началу
+            ctx.stroke();
+
+            // Заливка треугольника указанным цветом
+            ctx.fillStyle = color;
+            ctx.fill();                      // заливаем последний замкнутый путь
+        }
+
+        // Очистка canvas
+        ctx.clearRect(0, 0, 400, 300);
+
+        // Рисуем три треугольника
+        Tr(100, 100, 'rgb(0, 0, 255)');      // синий
+        Tr(200, 100, 'rgb(0, 255, 0)');      // зеленый
+        Tr(200, 160, 'rgb(255, 0, 0)');      // красный
+
+        // Аналог getch() - обработчик нажатия клавиши
+        document.addEventListener('keydown', () => {
+            document.querySelector('.info').textContent = 'Программа завершена';
+            console.log('Closegraph - аналог закрытия');
+        }, { once: true });
+    </script>
+</body>
+</html>

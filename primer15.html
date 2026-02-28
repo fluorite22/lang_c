@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Числа Фибоначчи - визуализация</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        h1 span {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        
+        .fibonacci-def {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+        }
+        
+        .fibonacci-def span {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .calculator {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        label {
+            font-weight: 600;
+            color: #555;
+            font-size: 1.1em;
+        }
+        
+        input {
+            padding: 12px 20px;
+            font-size: 1.1em;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            width: 100px;
+            text-align: center;
+            font-weight: bold;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+            color: white;
+        }
+        
+        .result-label {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .result-value {
+            font-size: 5em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .process-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .process-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+        }
+        
+        .process-title:before {
+            content: '🔄';
+            margin-right: 10px;
+            font-size: 1.3em;
+        }
+        
+        .iteration-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .iteration-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            font-weight: 600;
+        }
+        
+        .iteration-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .iteration-table tr:last-child td {
+            border-bottom: none;
+            font-weight: bold;
+            background: #e8f4fd;
+        }
+        
+        .iteration-table tr:hover td {
+            background: #f0f0f0;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        
+        .code-block .keyword {
+            color: #f97583;
+        }
+        
+        .code-block .function {
+            color: #b392f0;
+        }
+        
+        .code-block .comment {
+            color: #6a737d;
+        }
+        
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .example-btn {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .example-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .example-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #718096;
+            font-size: 0.9em;
+        }
+        
+        .copyright {
+            color: #a0aec0;
+            font-size: 0.8em;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span>Fibonacci</span> Numbers</h1>
+        <div class="subtitle">Визуализация работы функции Fib(n) из учебника К. Полякова</div>
+        
+        <div class="fibonacci-def">
+            <span>F(1) = 1, F(2) = 1</span><br>
+            <span>F(n) = F(n-1) + F(n-2)</span> для n > 2
+        </div>
+        
+        <div class="calculator">
+            <div class="input-group">
+                <label for="n">Введите n:</label>
+                <input type="number" id="n" min="1" max="40" value="10">
+                <button onclick="calculateFib()">Вычислить Fib(n)</button>
+                <button onclick="showAllSequences()" style="background: linear-gradient(45deg, #48bb78, #38a169);">Показать последовательность из учебника</button>
+            </div>
+        </div>
+        
+        <div class="examples">
+            <div class="example-btn" onclick="setExample(1)">Fib(1) = 1</div>
+            <div class="example-btn" onclick="setExample(2)">Fib(2) = 1</div>
+            <div class="example-btn" onclick="setExample(3)">Fib(3) = 2</div>
+            <div class="example-btn" onclick="setExample(4)">Fib(4) = 3</div>
+            <div class="example-btn" onclick="setExample(5)">Fib(5) = 5</div>
+            <div class="example-btn" onclick="setExample(8)">Fib(8) = 21</div>
+            <div class="example-btn" onclick="setExample(10)">Fib(10) = 55</div>
+            <div class="example-btn" onclick="setExample(20)">Fib(20) = 6765</div>
+        </div>
+        
+        <div class="result-card" id="resultCard">
+            <div class="result-label">Fib(<span id="resultN">10</span>)</div>
+            <div class="result-value" id="resultValue">55</div>
+        </div>
+        
+        <div class="process-panel">
+            <div class="process-title">Пошаговый процесс вычисления</div>
+            <table class="iteration-table" id="iterationTable">
+                <thead>
+                    <tr>
+                        <th>i</th>
+                        <th>a₂ (a2)</th>
+                        <th>a₁ (a1)</th>
+                        <th>a = a₁ + a₂</th>
+                    </tr>
+                </thead>
+                <tbody id="iterationBody">
+                    <!-- заполняется JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="code-block">
+            <span class="keyword">int</span> <span class="function">Fib</span> ( <span class="keyword">int</span> n )<br>
+            {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">int</span> a2 = 1, a1 = 0, a, i;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span> ( i = 1; i <= n; i ++ )<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;{<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a = a1 + a2; <span class="comment">// считаем очередной элемент</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a2 = a1; a1 = a; <span class="comment">// продвижение вперед</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> a;<br>
+            }
+        </div>
+        
+        <div class="process-panel">
+            <div class="process-title">📚 Последовательность вызовов из учебника</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; font-family: 'Courier New', monospace;">
+                <span style="background: #667eea; color: white; padding: 8px 15px; border-radius: 20px;">Fib(1) = 1</span>
+                <span style="background: #667eea; color: white; padding: 8px 15px; border-radius: 20px;">Fib(1) = 1</span>
+                <span style="background: #667eea; color: white; padding: 8px 15px; border-radius: 20px;">Fib(2) = 1</span>
+                <span style="background: #667eea; color: white; padding: 8px 15px; border-radius: 20px;">Fib(3) = 2</span>
+                <span style="background: #667eea; color: white; padding: 8px 15px; border-radius: 20px;">Fib(2) = 1</span>
+                <span style="background: #667eea; color: white; padding: 8px 15px; border-radius: 20px;">Fib(2) = 1</span>
+                <span style="background: #667eea; color: white; padding: 8px 15px; border-radius: 20px;">Fib(3) = 2</span>
+                <span style="background: #667eea; color: white; padding: 8px 15px; border-radius: 20px;">Fib(4) = 3</span>
+                <span style="background: #667eea; color: white; padding: 8px 15px; border-radius: 20px;">Fib(5) = 5</span>
+            </div>
+        </div>
+        
+        <footer>
+            <div>© К. Поляков, 1995-2014 | http://kpolyakov.narod.ru</div>
+            <div class="copyright">Программирование на языке Си, страница 33</div>
+        </footer>
+    </div>
+
+    <script>
+        // Функция Fib - точное соответствие коду из учебника
+        function Fib(n) {
+            let a2 = 1; // a2 в коде
+            let a1 = 0; // a1 в коде
+            let a = 0;  // результат
+            let iterations = [];
+            
+            for (let i = 1; i <= n; i++) {
+                a = a1 + a2;        // считаем очередной элемент
+                a2 = a1;             // продвижение вперед
+                a1 = a;              // продвижение вперед
+                
+                // Сохраняем шаг для таблицы
+                iterations.push({
+                    i: i,
+                    a2: a2,
+                    a1: a1,
+                    a: a
+                });
+            }
+            
+            return {
+                value: a,
+                iterations: iterations
+            };
+        }
+        
+        // Обновление интерфейса
+        function updateUI(n) {
+            if (n < 1) n = 1;
+            if (n > 40) n = 40;
+            
+            const result = Fib(n);
+            
+            // Обновляем результат
+            document.getElementById('resultN').textContent = n;
+            document.getElementById('resultValue').textContent = result.value;
+            
+            // Обновляем таблицу итераций
+            const tbody = document.getElementById('iterationBody');
+            tbody.innerHTML = '';
+            
+            result.iterations.forEach(iter => {
+                const row = document.createElement('tr');
+                if (iter.i === result.iterations.length) {
+                    row.style.fontWeight = 'bold';
+                    row.style.background = '#e8f4fd';
+                }
+                
+                row.innerHTML = `
+                    <td>${iter.i}</td>
+                    <td>${iter.a2}</td>
+                    <td>${iter.a1}</td>
+                    <td>${iter.a}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Анимация результата
+            const resultCard = document.getElementById('resultCard');
+            resultCard.style.transform = 'scale(1.02)';
+            setTimeout(() => {
+                resultCard.style.transform = 'scale(1)';
+            }, 200);
+        }
+        
+        // Вычисление по введенному значению
+        function calculateFib() {
+            const n = parseInt(document.getElementById('n').value);
+            updateUI(n);
+        }
+        
+        // Установка примера
+        function setExample(n) {
+            document.getElementById('n').value = n;
+            calculateFib();
+        }
+        
+        // Показать все значения из учебника
+        function showAllSequences() {
+            const sequence = [1, 1, 2, 3, 2, 2, 3, 4, 5];
+            let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+            
+            sequence.forEach((n, index) => {
+                const result = Fib(n);
+                html += `<div style="display: flex; align-items: center; gap: 10px; background: #f0f0f0; padding: 8px 15px; border-radius: 10px;">
+                    <span style="font-weight: bold; color: #667eea; min-width: 60px;">Fib(${n})</span>
+                    <span style="font-family: monospace; font-size: 1.2em;">=</span>
+                    <span style="font-weight: bold; font-size: 1.2em;">${result.value}</span>
+                </div>`;
+            });
+            
+            html += '</div>';
+            
+            // Создаем модальное окно
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.7);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 20px; max-width: 400px;">
+                    <h3 style="margin-top:0; color: #333;">Последовательность из учебника</h3>
+                    ${html}
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                        style="margin-top: 20px; width: 100%; padding: 10px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        Закрыть
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        // Добавляем обработчик для Enter в поле ввода
+        document.getElementById('n').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculateFib();
+            }
+        });
+        
+        // Вычисляем при загрузке
+        window.onload = function() {
+            updateUI(10);
+        };
+        
+        // Соответствие с кодом на C:
+        /*
+        int Fib (int n) {
+            int a2 = 1, a1 = 0, a, i;
+            for (i = 1; i <= n; i++) {
+                a = a1 + a2;
+                a2 = a1;
+                a1 = a;
+            }
+            return a;
+        }
+        */
+    </script>
+</body>
+</html>

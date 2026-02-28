@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вычисление sin(x) через ряд Тейлора</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        h1 span {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .series-formula {
+            text-align: center;
+            font-size: 1.3em;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+        
+        .series-formula span {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .calculator {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        label {
+            font-weight: 600;
+            color: #555;
+            font-size: 1.1em;
+        }
+        
+        input {
+            padding: 12px 20px;
+            font-size: 1.1em;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            width: 150px;
+            text-align: center;
+            font-weight: bold;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+            color: white;
+        }
+        
+        .result-label {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .result-value {
+            font-size: 3.5em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .comparison-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .comparison-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .process-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            overflow-x: auto;
+        }
+        
+        .process-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+        }
+        
+        .process-title:before {
+            content: '🔄';
+            margin-right: 10px;
+            font-size: 1.3em;
+        }
+        
+        .iteration-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .iteration-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            font-weight: 600;
+        }
+        
+        .iteration-table td {
+            padding: 10px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .iteration-table tr:last-child td {
+            border-bottom: none;
+            font-weight: bold;
+            background: #e8f4fd;
+        }
+        
+        .iteration-table tr:hover td {
+            background: #f0f0f0;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        
+        .code-block .keyword {
+            color: #f97583;
+        }
+        
+        .code-block .function {
+            color: #b392f0;
+        }
+        
+        .code-block .comment {
+            color: #6a737d;
+        }
+        
+        .code-block .number {
+            color: #79b8ff;
+        }
+        
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .example-btn {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .example-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .accuracy-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .accuracy-control select {
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 1em;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #718096;
+            font-size: 0.9em;
+        }
+        
+        .variables-explanation {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+            font-size: 0.9em;
+        }
+        
+        .var-item {
+            background: #f0f0f0;
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .var-name {
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span>sin(x)</span> через ряд Тейлора</h1>
+        <div class="subtitle">Реализация функции sin1() из учебника К. Полякова</div>
+        
+        <div class="info-box">
+            <strong>Ряд Тейлора для sin(x):</strong><br>
+            sin(x) = x - x³/3! + x⁵/5! - x⁷/7! + ... + (-1)ⁿ·x²ⁿ⁺¹/(2n+1)!
+        </div>
+        
+        <div class="series-formula">
+            sin(x) ≈ <span id="seriesTerms">x - x³/6 + x⁵/120 - x⁷/5040 + ...</span>
+        </div>
+        
+        <div class="calculator">
+            <div class="input-group">
+                <label for="x">x (в радианах):</label>
+                <input type="number" id="x" step="0.1" min="-10" max="10" value="1.0">
+                
+                <label for="epsilon">Точность:</label>
+                <select id="epsilon">
+                    <option value="1e-3">10⁻³</option>
+                    <option value="1e-4">10⁻⁴</option>
+                    <option value="1e-6" selected>10⁻⁶</option>
+                    <option value="1e-8">10⁻⁸</option>
+                    <option value="1e-10">10⁻¹⁰</option>
+                </select>
+                
+                <button onclick="calculateSin()">Вычислить sin(x)</button>
+            </div>
+            
+            <div class="accuracy-control">
+                <span>⚡ Быстрые примеры:</span>
+                <button class="example-btn" onclick="setExample(0)">sin(0) = 0</button>
+                <button class="example-btn" onclick="setExample(3.14159/6)">sin(30°) = 0.5</button>
+                <button class="example-btn" onclick="setExample(3.14159/2)">sin(90°) = 1</button>
+                <button class="example-btn" onclick="setExample(3.14159)">sin(π) = 0</button>
+            </div>
+        </div>
+        
+        <div class="result-card" id="resultCard">
+            <div class="result-label">sin(<span id="resultX">1.0</span>)</div>
+            <div class="result-value" id="resultValue">0.841471</div>
+        </div>
+        
+        <div class="comparison">
+            <div class="comparison-item">
+                <div style="color: #666; margin-bottom: 5px;">Вычисленное значение:</div>
+                <div class="comparison-value" id="computedValue">0.841471</div>
+                <div style="color: #999; font-size: 0.9em; margin-top: 5px;">ряда Тейлора</div>
+            </div>
+            <div class="comparison-item">
+                <div style="color: #666; margin-bottom: 5px;">Math.sin(x):</div>
+                <div class="comparison-value" id="mathSinValue">0.841471</div>
+                <div style="color: #999; font-size: 0.9em; margin-top: 5px;">встроенная функция</div>
+            </div>
+        </div>
+        
+        <div class="process-panel">
+            <div class="process-title">Пошаговый процесс вычисления</div>
+            
+            <div class="variables-explanation">
+                <div class="var-item"><span class="var-name">s</span> - сумма ряда</div>
+                <div class="var-item"><span class="var-name">a</span> - текущий элемент</div>
+                <div class="var-item"><span class="var-name">xx</span> = xⁿ</div>
+                <div class="var-item"><span class="var-name">fact</span> = n!</div>
+                <div class="var-item"><span class="var-name">z</span> - знак (+1/-1)</div>
+            </div>
+            
+            <table class="iteration-table" id="iterationTable">
+                <thead>
+                    <tr>
+                        <th>n</th>
+                        <th>xx (xⁿ)</th>
+                        <th>fact (n!)</th>
+                        <th>z (знак)</th>
+                        <th>a (элемент)</th>
+                        <th>s (сумма)</th>
+                        <th>|a|</th>
+                    </tr>
+                </thead>
+                <tbody id="iterationBody">
+                    <!-- заполняется JavaScript -->
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 15px; text-align: right; color: #666;" id="iterCount">
+                Всего итераций: 0
+            </div>
+        </div>
+        
+        <div class="code-block">
+            <span class="keyword">double</span> <span class="function">sin1</span> ( <span class="keyword">double</span> x )<br>
+            {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">double</span> s = 0, a, xx = x, fact = 1, n2 = 1;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">int</span> z = 1;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">do</span> {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a = z * xx / fact;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s += a;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;z = -z;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xx *= x*x;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n2 += 2;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fact *= (n2-1) * n2;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;} <span class="keyword">while</span> ( <span class="function">fabs</span>(a) > 1.e-6 );<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> s;<br>
+            }
+        </div>
+        
+        <div class="info-box">
+            <strong>Обозначения в коде:</strong><br>
+            • <strong>s</strong> - частичная сумма ряда<br>
+            • <strong>a</strong> - элемент ряда (-1)ⁿ·x²ⁿ⁺¹/(2n+1)!<br>
+            • <strong>xx</strong> - значение x²ⁿ⁺¹<br>
+            • <strong>fact</strong> - значение (2n+1)!<br>
+            • <strong>n2</strong> - значение 2n+1<br>
+            • <strong>z</strong> - знак (+1 или -1)
+        </div>
+        
+        <footer>
+            © К. Поляков, 1995-2014 | http://kpolyakov.narod.ru | страница 35
+        </footer>
+    </div>
+
+    <script>
+        // Функция синуса через ряд Тейлора (точное соответствие коду из учебника)
+        function sin1(x, epsilon = 1e-6) {
+            let s = 0;          // сумма ряда
+            let a;              // текущий элемент
+            let xx = x;         // x^(2n+1)
+            let fact = 1;       // факториал (2n+1)!
+            let n2 = 1;         // 2n+1
+            let z = 1;          // знак (+1 или -1)
+            
+            let iterations = []; // для визуализации
+            
+            do {
+                a = z * xx / fact;  // вычисляем элемент ряда
+                s += a;             // добавляем к сумме
+                
+                // Сохраняем шаг для таблицы
+                iterations.push({
+                    n: (n2 - 1) / 2,
+                    xx: xx,
+                    fact: fact,
+                    z: z,
+                    a: a,
+                    s: s,
+                    absA: Math.abs(a)
+                });
+                
+                z = -z;             // меняем знак
+                xx *= x * x;        // увеличиваем степень на 2
+                n2 += 2;            // увеличиваем счетчик
+                fact *= (n2 - 1) * n2; // вычисляем новый факториал
+                
+            } while (Math.abs(a) > epsilon);
+            
+            return {
+                value: s,
+                iterations: iterations
+            };
+        }
+        
+        // Обновление интерфейса
+        function updateUI(x, epsilon) {
+            const result = sin1(x, epsilon);
+            
+            // Обновляем результат
+            document.getElementById('resultX').textContent = x.toFixed(3);
+            document.getElementById('resultValue').textContent = result.value.toFixed(10);
+            document.getElementById('computedValue').textContent = result.value.toFixed(10);
+            document.getElementById('mathSinValue').textContent = Math.sin(x).toFixed(10);
+            
+            // Обновляем таблицу итераций
+            const tbody = document.getElementById('iterationBody');
+            tbody.innerHTML = '';
+            
+            result.iterations.forEach((iter, index) => {
+                const row = document.createElement('tr');
+                if (index === result.iterations.length - 1) {
+                    row.style.fontWeight = 'bold';
+                    row.style.background = '#e8f4fd';
+                }
+                
+                row.innerHTML = `
+                    <td>${iter.n}</td>
+                    <td>${iter.xx.toExponential(4)}</td>
+                    <td>${iter.fact.toExponential(4)}</td>
+                    <td>${iter.z > 0 ? '+' : '-'}</td>
+                    <td>${iter.a.toExponential(6)}</td>
+                    <td>${iter.s.toFixed(10)}</td>
+                    <td>${iter.absA.toExponential(4)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('iterCount').textContent = 
+                `Всего итераций: ${result.iterations.length}`;
+            
+            // Обновляем формулу
+            updateSeriesTerms(result.iterations);
+            
+            // Анимация
+            const resultCard = document.getElementById('resultCard');
+            resultCard.style.transform = 'scale(1.02)';
+            setTimeout(() => {
+                resultCard.style.transform = 'scale(1)';
+            }, 200);
+        }
+        
+        // Обновление отображения ряда
+        function updateSeriesTerms(iterations) {
+            let terms = [];
+            iterations.forEach((iter, i) => {
+                let sign = i === 0 ? '' : (iter.z > 0 ? ' + ' : ' - ');
+                let term = `x<sup>${2*iter.n + 1}</sup>/${iter.fact.toFixed(0)}`;
+                if (i === 0) term = 'x';
+                else if (i === 1) term = `x<sup>3</sup>/6`;
+                else if (i === 2) term = `x<sup>5</sup>/120`;
+                else if (i === 3) term = `x<sup>7</sup>/5040`;
+                else term = `x<sup>${2*iter.n + 1}</sup>/...`;
+                
+                terms.push(sign + term);
+            });
+            terms.push(' + ...');
+            document.getElementById('seriesTerms').innerHTML = terms.join('');
+        }
+        
+        // Основная функция вычисления
+        function calculateSin() {
+            const x = parseFloat(document.getElementById('x').value);
+            const epsilon = parseFloat(document.getElementById('epsilon').value);
+            
+            if (isNaN(x)) {
+                alert('Пожалуйста, введите число');
+                return;
+            }
+            
+            updateUI(x, epsilon);
+        }
+        
+        // Установка примера
+        function setExample(x) {
+            document.getElementById('x').value = x;
+            calculateSin();
+        }
+        
+        // Добавляем обработчик для Enter
+        document.getElementById('x').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculateSin();
+            }
+        });
+        
+        // Вычисляем при загрузке
+        window.onload = function() {
+            calculateSin();
+        };
+        
+        // Соответствие коду на C:
+        /*
+        double sin1(double x) {
+            double s = 0, a, xx = x, fact = 1, n2 = 1;
+            int z = 1;
+            do {
+                a = z * xx / fact;
+                s += a;
+                z = -z;
+                xx *= x * x;
+                n2 += 2;
+                fact *= (n2 - 1) * n2;
+            } while (fabs(a) > 1e-6);
+            return s;
+        }
+        */
+    </script>
+</body>
+</html>

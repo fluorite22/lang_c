@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пузырьки в кастрюле - BGI to JS</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .canvas-container {
+            position: relative;
+            margin: 0 auto;
+            width: fit-content;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 3px solid #333;
+            border-radius: 10px;
+            background-color: #87CEEB;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+        
+        /* Декоративная кастрюля */
+        .pot-decoration {
+            position: relative;
+            width: 800px;
+            margin: 0 auto;
+        }
+        
+        .pot-handle {
+            position: absolute;
+            top: 50px;
+            right: -20px;
+            width: 40px;
+            height: 20px;
+            border: 3px solid #999;
+            border-radius: 50%;
+            transform: rotate(15deg);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background: linear-gradient(45deg, #0077b6, #00b4d8);
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 119, 182, 0.4);
+        }
+        
+        button.stop {
+            background: linear-gradient(45deg, #d00000, #dc2f2f);
+        }
+        
+        button.reset {
+            background: linear-gradient(45deg, #ffb703, #fb8500);
+        }
+        
+        .info-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-item {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .info-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #0077b6;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .stats-panel {
+            display: flex;
+            justify-content: space-around;
+            background: linear-gradient(135deg, #0077b6, #00b4d8);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: white;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        
+        .code-block .keyword {
+            color: #f97583;
+        }
+        
+        .code-block .function {
+            color: #b392f0;
+        }
+        
+        .code-block .comment {
+            color: #6a737d;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        
+        input[type=range] {
+            width: 300px;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #0077b6, #00b4d8);
+            outline: none;
+        }
+        
+        .speed-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #0077b6;
+            min-width: 60px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #718096;
+            font-size: 0.9em;
+        }
+        
+        .water-effect {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(transparent, rgba(0, 119, 182, 0.3));
+            pointer-events: none;
+            border-radius: 0 0 10px 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🫧 Пузырьки в кастрюле</h1>
+        <div class="subtitle">Анимация поднимающихся пузырьков (N = 100)</div>
+        
+        <div class="canvas-container">
+            <canvas id="canvas" width="800" height="600"></canvas>
+            <div class="water-effect"></div>
+        </div>
+        
+        <div class="stats-panel">
+            <div class="stat-item">
+                <div>Всего пузырьков</div>
+                <div class="stat-value" id="totalBubbles">100</div>
+            </div>
+            <div class="stat-item">
+                <div>Активных</div>
+                <div class="stat-value" id="activeBubbles">100</div>
+            </div>
+            <div class="stat-item">
+                <div>Обновлено за сек</div>
+                <div class="stat-value" id="fps">60</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="startAnimation()">▶ Старт</button>
+            <button class="stop" onclick="stopAnimation()">⏹ Стоп</button>
+            <button class="reset" onclick="resetBubbles()">↺ Сброс</button>
+        </div>
+        
+        <div class="slider-container">
+            <span style="color: #666;">🐢 Медленно</span>
+            <input type="range" id="speedSlider" min="1" max="20" value="4">
+            <span style="color: #666;">🐇 Быстро</span>
+            <span class="speed-value" id="speedValue">4 px/шаг</span>
+        </div>
+        
+        <div class="info-panel">
+            <div class="info-item">
+                <div class="info-label">Радиус пузырька</div>
+                <div class="info-value">3 px</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Скорость подъема</div>
+                <div class="info-value" id="currentSpeed">4 px/шаг</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Пузырьков на дне</div>
+                <div class="info-value" id="bubblesAtBottom">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Нажатия Esc</div>
+                <div class="info-value" id="escCount">0</div>
+            </div>
+        </div>
+        
+        <div class="code-block">
+            <span class="keyword">const int</span> N = 100; <span class="comment">// количество пузырьков</span><br>
+            <span class="keyword">int</span> X[N], Y[N], r = 3; <span class="comment">// координаты и радиус</span><br><br>
+            
+            <span class="keyword">void</span> Init() {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span> (<span class="keyword">int</span> i = 0; i < N; i++) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X[i] = random(800 - 2*r) + r;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Y[i] = random(600 - 2*r) + r;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+            }<br><br>
+            
+            <span class="keyword">void</span> Zamena() {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span> (<span class="keyword">int</span> i = 0; i < N; i++)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> (Y[i] <= r) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X[i] = random(800 - 2*r) + r;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Y[i] = 600 - r;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+            }
+        </div>
+        
+        <footer>
+            © К. Поляков, 1995-2009 | Программирование на языке Си
+        </footer>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Константы из программы
+        const N = 100;           // количество пузырьков
+        const r = 3;             // радиус пузырька
+        
+        // Массивы для хранения координат
+        let X = new Array(N);
+        let Y = new Array(N);
+        
+        // Переменные для анимации
+        let animationId = null;
+        let running = false;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let fps = 0;
+        let escPresses = 0;
+        
+        // Цвета
+        const YELLOW = '#FFFF00';
+        const BLACK = '#000000';
+        const BLUE = '#0077b6';
+        
+        //-----------------------------------------
+        // random – генератор случайных чисел
+        //-----------------------------------------
+        function random(n) {
+            return Math.floor(Math.random() * n);
+        }
+        
+        //-----------------------------------------
+        // Init – начальная расстановка пузырьков
+        //-----------------------------------------
+        function Init() {
+            for (let i = 0; i < N; i++) {
+                X[i] = random(800 - 2 * r) + r;
+                Y[i] = random(600 - 2 * r) + r;
+            }
+        }
+        
+        //-----------------------------------------
+        // Draw – рисование всех пузырьков
+        //-----------------------------------------
+        function Draw(color) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            
+            if (color === YELLOW) {
+                ctx.fillStyle = YELLOW;
+            }
+            
+            for (let i = 0; i < N; i++) {
+                ctx.beginPath();
+                ctx.arc(X[i], Y[i], r, 0, 2 * Math.PI);
+                ctx.stroke();
+                
+                // Для желтых пузырьков делаем заливку
+                if (color === YELLOW) {
+                    ctx.fillStyle = YELLOW;
+                    ctx.fill();
+                }
+            }
+        }
+        
+        //-----------------------------------------
+        // Sdvig – сдвиг всех пузырьков вверх
+        //-----------------------------------------
+        function Sdvig(dy) {
+            for (let i = 0; i < N; i++) {
+                Y[i] -= dy;
+            }
+        }
+        
+        //-----------------------------------------
+        // Zamena – замена улетевших пузырьков
+        //-----------------------------------------
+        function Zamena() {
+            let bottomCount = 0;
+            
+            for (let i = 0; i < N; i++) {
+                if (Y[i] <= r) {  // пузырек улетел за верхний край
+                    X[i] = random(800 - 2 * r) + r;
+                    Y[i] = 600 - r;  // появляется на дне
+                    bottomCount++;
+                }
+            }
+            
+            document.getElementById('bubblesAtBottom').textContent = bottomCount;
+        }
+        
+        //-----------------------------------------
+        // Очистка canvas (рисуем фон)
+        //-----------------------------------------
+        function clearCanvas() {
+            // Градиент для воды
+            const gradient = ctx.createLinearGradient(0, 0, 0, 600);
+            gradient.addColorStop(0, '#87CEEB');
+            gradient.addColorStop(1, '#B0E0E6');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 800, 600);
+            
+            // Рисуем "дно" кастрюли
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(0, 590, 800, 10);
+            
+            // Блики на воде
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.moveTo(100 + i * 150, 580);
+                ctx.lineTo(150 + i * 150, 570);
+                ctx.stroke();
+            }
+        }
+        
+        //-----------------------------------------
+        // Обновление статистики
+        //-----------------------------------------
+        function updateStats() {
+            document.getElementById('totalBubbles').textContent = N;
+            
+            // Подсчет активных (видимых) пузырьков
+            let active = 0;
+            for (let i = 0; i < N; i++) {
+                if (Y[i] >= 0 && Y[i] <= 600) active++;
+            }
+            document.getElementById('activeBubbles').textContent = active;
+            
+            // FPS
+            const now = Date.now();
+            frameCount++;
+            if (now - lastFpsUpdate >= 1000) {
+                fps = frameCount;
+                frameCount = 0;
+                lastFpsUpdate = now;
+                document.getElementById('fps').textContent = fps;
+            }
+        }
+        
+        //-----------------------------------------
+        // Шаг анимации
+        //-----------------------------------------
+        function animate() {
+            if (!running) return;
+            
+            // Проверка нажатия Esc (обрабатывается глобально)
+            
+            // Получаем текущую скорость
+            const speed = parseInt(document.getElementById('speedSlider').value);
+            
+            // Рисуем желтые пузырьки
+            clearCanvas();
+            Draw(YELLOW);
+            
+            // Задержка (аналог delay)
+            setTimeout(() => {
+                if (!running) return;
+                
+                // Стираем (рисуем фон поверх)
+                clearCanvas();
+                
+                // Сдвигаем и заменяем
+                Sdvig(speed);
+                Zamena();
+                
+                // Обновляем статистику
+                updateStats();
+                
+                // Продолжаем анимацию
+                animationId = setTimeout(animate, 10);
+            }, 10);
+        }
+        
+        //-----------------------------------------
+        // Управление анимацией
+        //-----------------------------------------
+        function startAnimation() {
+            if (!running) {
+                running = true;
+                animate();
+            }
+        }
+        
+        function stopAnimation() {
+            running = false;
+            if (animationId) {
+                clearTimeout(animationId);
+                animationId = null;
+            }
+            
+            // Показываем пузырьки в текущем положении
+            clearCanvas();
+            Draw(YELLOW);
+        }
+        
+        function resetBubbles() {
+            stopAnimation();
+            Init();
+            clearCanvas();
+            Draw(YELLOW);
+            updateStats();
+            document.getElementById('bubblesAtBottom').textContent = '0';
+        }
+        
+        //-----------------------------------------
+        // Обработчик клавиш (аналог kbhit и getch)
+        //-----------------------------------------
+        function handleKeyDown(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                escPresses++;
+                document.getElementById('escCount').textContent = escPresses;
+                stopAnimation();
+                alert('Программа остановлена (Esc)');
+            }
+        }
+        
+        //-----------------------------------------
+        // Обновление отображения скорости
+        //-----------------------------------------
+        document.getElementById('speedSlider').addEventListener('input', function(e) {
+            const val = e.target.value;
+            document.getElementById('speedValue').textContent = val + ' px/шаг';
+            document.getElementById('currentSpeed').textContent = val + ' px/шаг';
+        });
+        
+        //-----------------------------------------
+        // Инициализация
+        //-----------------------------------------
+        window.onload = () => {
+            Init();
+            clearCanvas();
+            Draw(YELLOW);
+            updateStats();
+            
+            // Устанавливаем начальное значение скорости
+            document.getElementById('speedValue').textContent = '4 px/шаг';
+            document.getElementById('currentSpeed').textContent = '4 px/шаг';
+            
+            // Запускаем анимацию автоматически
+            startAnimation();
+        };
+        
+        // Добавляем обработчик клавиш
+        window.addEventListener('keydown', handleKeyDown);
+        
+        // Блокируем скролл по Esc и стрелкам
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' || e.key.startsWith('Arrow')) {
+                e.preventDefault();
+            }
+        });
+        
+        //-----------------------------------------
+        // Соответствие оригинальному коду
+        //-----------------------------------------
+        /*
+        const int N = 100;
+        int X[N], Y[N], r = 3;
+        
+        void Init() {
+            for (int i = 0; i < N; i++) {
+                X[i] = random(800 - 2*r) + r;
+                Y[i] = random(600 - 2*r) + r;
+            }
+        }
+        
+        void Draw(int color) {
+            setcolor(color);
+            for (int i = 0; i < N; i++)
+                circle(X[i], Y[i], r);
+        }
+        
+        void Sdvig(int dy) {
+            for (int i = 0; i < N; i++) Y[i] -= dy;
+        }
+        
+        void Zamena() {
+            for (int i = 0; i < N; i++)
+                if (Y[i] <= r) {
+                    X[i] = random(800 - 2*r) + r;
+                    Y[i] = 600 - r;
+                }
+        }
+        */
+    </script>
+</body>
+</html>

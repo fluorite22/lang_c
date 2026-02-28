@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анимация квадрата - BGI to JS</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: #000080; /* Темно-синий фон как в BGI */
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.active {
+            background-color: #ff4444;
+        }
+        button.stop {
+            background-color: #ff4444;
+        }
+        button.stop:hover {
+            background-color: #cc0000;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .key-hint {
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Анимация квадрата (портировано с BGI)</h2>
+    
+    <canvas id="canvas" width="400" height="400"></canvas>
+    
+    <div class="controls">
+        <button id="mode1" class="active">Режим 1: Автоматическое движение</button>
+        <button id="mode2">Режим 2: Управление стрелками</button>
+        <button id="mode3">Режим 3: Непрерывное движение с управлением</button>
+        <button id="stopBtn" class="stop">Стоп</button>
+    </div>
+    
+    <div class="info" id="info">
+        Режим 1: Квадрат движется вправо до границы<br>
+        Нажмите Esc для остановки
+    </div>
+    
+    <div class="key-hint">
+        Esc - выход из режима | В режимах 2 и 3: стрелки для управления
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const info = document.getElementById('info');
+        
+        // Константы цветов
+        const BLUE = 'rgb(0, 0, 255)';
+        const YELLOW = 'rgb(255, 255, 0)';
+        
+        let animationId = null;
+        let currentMode = 1;
+        let running = false;
+        
+        // Функция Draw - рисует квадрат в позиции (x,y) заданным цветом
+        function Draw(x, y, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, 20, 20);
+        }
+        
+        // Функция очистки фона
+        function clearBackground() {
+            ctx.fillStyle = BLUE;
+            ctx.fillRect(0, 0, 399, 399);
+        }
+        
+        // === РЕЖИМ 1: Автоматическое движение вправо ===
+        function runMode1() {
+            running = true;
+            let x = 0;
+            const y = 240;
+            
+            info.innerHTML = 'Режим 1: Квадрат движется вправо. Нажмите Esc для остановки';
+            
+            function animate() {
+                if (!running) return;
+                
+                // Проверка нажатия клавиш
+                if (keys['Escape']) {
+                    stopAnimation();
+                    return;
+                }
+                
+                // Проверка границы
+                if (x + 20 < 400) {
+                    clearBackground();
+                    Draw(x, y, YELLOW);
+                    x++;
+                    
+                    animationId = setTimeout(animate, 20);
+                } else {
+                    info.innerHTML = 'Режим 1: Достигнута граница. Нажмите другую кнопку';
+                    running = false;
+                }
+            }
+            
+            animate();
+        }
+        
+        // === РЕЖИМ 2: Управление стрелками (пошаговое) ===
+        function runMode2() {
+            running = true;
+            let x = 200;
+            let y = 200;
+            
+            info.innerHTML = 'Режим 2: Управляйте стрелками. Esc - выход';
+            clearBackground();
+            Draw(x, y, YELLOW);
+            
+            function handleKeyDown(e) {
+                if (!running) return;
+                
+                const key = e.key;
+                e.preventDefault();
+                
+                // Стираем старый квадрат
+                clearBackground();
+                
+                // Обработка клавиш
+                switch(key) {
+                    case 'Escape':
+                        stopAnimation();
+                        break;
+                    case 'ArrowLeft':  // 75 в BGI
+                        x = Math.max(0, x - 20);
+                        break;
+                    case 'ArrowRight': // 77 в BGI
+                        x = Math.min(380, x + 20);
+                        break;
+                    case 'ArrowUp':    // 72 в BGI
+                        y = Math.max(0, y - 20);
+                        break;
+                    case 'ArrowDown':  // 80 в BGI
+                        y = Math.min(380, y + 20);
+                        break;
+                }
+                
+                // Рисуем на новой позиции
+                Draw(x, y, YELLOW);
+            }
+            
+            window.addEventListener('keydown', handleKeyDown);
+            
+            // Сохраняем обработчик для удаления
+            window.mode2Handler = handleKeyDown;
+        }
+        
+        // === РЕЖИМ 3: Непрерывное движение с управлением ===
+        function runMode3() {
+            running = true;
+            let x = 200;
+            let y = 200;
+            let dx = 1;
+            let dy = 0;
+            
+            info.innerHTML = 'Режим 3: Непрерывное движение. Стрелки меняют направление, Esc - выход';
+            clearBackground();
+            
+            function handleKeyDown(e) {
+                if (!running) return;
+                
+                const key = e.key;
+                e.preventDefault();
+                
+                if (key === 'Escape') {
+                    stopAnimation();
+                    return;
+                }
+                
+                // Изменение направления движения
+                switch(key) {
+                    case 'ArrowLeft':  // 75
+                        dx = -1; dy = 0;
+                        break;
+                    case 'ArrowRight': // 77
+                        dx = 1; dy = 0;
+                        break;
+                    case 'ArrowUp':    // 72
+                        dx = 0; dy = -1;
+                        break;
+                    case 'ArrowDown':  // 80
+                        dx = 0; dy = 1;
+                        break;
+                }
+            }
+            
+            window.addEventListener('keydown', handleKeyDown);
+            window.mode3Handler = handleKeyDown;
+            
+            function animate() {
+                if (!running) return;
+                
+                // Стираем старый квадрат
+                clearBackground();
+                
+                // Рисуем на новой позиции
+                Draw(x, y, YELLOW);
+                
+                // Обновляем позицию
+                x += dx;
+                y += dy;
+                
+                // Проверка границ
+                if (x < 0) x = 0;
+                if (x > 380) x = 380;
+                if (y < 0) y = 0;
+                if (y > 380) y = 380;
+                
+                animationId = setTimeout(animate, 10);
+            }
+            
+            animate();
+        }
+        
+        // Остановка анимации
+        function stopAnimation() {
+            running = false;
+            if (animationId) {
+                clearTimeout(animationId);
+                animationId = null;
+            }
+            
+            // Удаляем обработчики событий
+            if (window.mode2Handler) {
+                window.removeEventListener('keydown', window.mode2Handler);
+                window.mode2Handler = null;
+            }
+            if (window.mode3Handler) {
+                window.removeEventListener('keydown', window.mode3Handler);
+                window.mode3Handler = null;
+            }
+            
+            clearBackground();
+            info.innerHTML = 'Анимация остановлена. Выберите режим';
+            
+            // Сбрасываем активные кнопки
+            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('stopBtn').classList.add('active');
+        }
+        
+        // Состояние клавиш
+        const keys = {};
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            if (e.key === 'Escape') e.preventDefault();
+        });
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+        
+        // Обработчики кнопок
+        document.getElementById('mode1').addEventListener('click', () => {
+            stopAnimation();
+            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('mode1').classList.add('active');
+            currentMode = 1;
+            runMode1();
+        });
+        
+        document.getElementById('mode2').addEventListener('click', () => {
+            stopAnimation();
+            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('mode2').classList.add('active');
+            currentMode = 2;
+            runMode2();
+        });
+        
+        document.getElementById('mode3').addEventListener('click', () => {
+            stopAnimation();
+            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('mode3').classList.add('active');
+            currentMode = 3;
+            runMode3();
+        });
+        
+        document.getElementById('stopBtn').addEventListener('click', stopAnimation);
+        
+        // Инициализация - синий фон
+        clearBackground();
+        
+        // Блокируем стандартное поведение стрелок и Escape
+        window.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Escape'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

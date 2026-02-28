@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sharik's house - BGI to JS</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="440" height="300"></canvas>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Очистка canvas (аналог initwindow)
+        ctx.clearRect(0, 0, 440, 300);
+
+        // Рисуем синий прямоугольник (bar)
+        ctx.fillStyle = '#0000FF'; // Цвет 9 в BGI - синий
+        ctx.fillRect(100, 100, 200, 100); // ширина 200, высота 100
+
+        // Фиолетовая рамка (setcolor 13 - светло-фиолетовый)
+        ctx.strokeStyle = '#FF00FF'; // Цвет 13 в BGI - фиолетовый
+        ctx.lineWidth = 1;
+        ctx.strokeRect(100, 100, 200, 100);
+
+        // Рисуем крышу ломаную линию (moveto + lineto)
+        ctx.beginPath();
+        ctx.moveTo(100, 100);
+        ctx.lineTo(200, 50);
+        ctx.lineTo(300, 100);
+        ctx.strokeStyle = '#FFFFFF'; // Белый для контура
+        ctx.stroke();
+
+        // Заливаем крышу желтым (floodfill)
+        ctx.fillStyle = '#FFFF00'; // Цвет 14 - желтый
+        ctx.fill(); // Заливаем замкнутую область
+
+        // Белая окружность (circle)
+        ctx.beginPath();
+        ctx.arc(200, 150, 50, 0, Math.PI * 2);
+        ctx.strokeStyle = '#FFFFFF'; // Цвет 15 - белый
+        ctx.stroke();
+
+        // Зеленая заливка круга (floodfill)
+        ctx.fillStyle = '#00FF00'; // Цвет 10 - светло-зеленый
+        ctx.fill();
+
+        // Текст (outtextxy)
+        ctx.font = '14px Arial';
+        ctx.fillStyle = '#FF0000'; // Цвет 12 - красный
+        ctx.fillText("Sharik's house.", 100, 230);
+
+        // Аналог getch() - просто выводим сообщение
+        console.log("Нажмите любую клавишу для продолжения...");
+        
+        // Для имитации getch() можно добавить обработчик
+        document.addEventListener('keydown', () => {
+            console.log("Программа завершена");
+        }, { once: true });
+    </script>
+</body>
+</html>

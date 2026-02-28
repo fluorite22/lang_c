@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ромбы на Canvas</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: #fff;
+        }
+        .info {
+            margin-top: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <div class="info" id="info"></div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const info = document.getElementById('info');
+
+        // Функция Romb (определена выше)
+        function Romb(x, y, a, b, color, colorFill, ctx, canvasWidth = 640, canvasHeight = 480) {
+            if ((x < a) || (x > canvasWidth - a) || (y < b) || (y > canvasHeight - b)) {
+                return false;
+            }
+
+            ctx.save();
+
+            // Рисуем границы
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1;
+            
+            ctx.beginPath();
+            ctx.moveTo(x - a, y);
+            ctx.lineTo(x, y - b);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(x - a, y);
+            ctx.lineTo(x, y + b);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(x + a, y);
+            ctx.lineTo(x, y - b);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(x + a, y);
+            ctx.lineTo(x, y + b);
+            ctx.stroke();
+
+            // Заливка
+            ctx.fillStyle = colorFill;
+            ctx.beginPath();
+            ctx.moveTo(x - a, y);
+            ctx.lineTo(x, y - b);
+            ctx.lineTo(x + a, y);
+            ctx.lineTo(x, y + b);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+            return true;
+        }
+
+        // Очищаем canvas
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, 640, 480);
+
+        // Рисуем несколько ромбов
+        let results = [];
+        
+        // Центральный ромб
+        results.push(Romb(320, 240, 100, 50, '#FF0000', '#FFA500', ctx));
+        
+        // Ромб в левом верхнем углу (должен вернуть false)
+        results.push(Romb(50, 50, 100, 50, '#00FF00', '#00FFFF', ctx));
+        
+        // Ромб в правом нижнем углу
+        results.push(Romb(500, 400, 80, 40, '#0000FF', '#FF00FF', ctx));
+        
+        // Ромб у левого края
+        results.push(Romb(150, 200, 60, 30, '#800080', '#FFFF00', ctx));
+
+        // Информация о результатах
+        info.innerHTML = 'Результаты рисования ромбов:<br>' +
+            results.map((result, i) => `Ромб ${i + 1}: ${result ? '✓ нарисован' : '✗ за пределами'}`).join('<br>');
+    </script>
+</body>
+</html>

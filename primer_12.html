@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Отрисовка графики</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f0f0;
+        }
+        canvas {
+            border: 1px solid #333;
+            background: black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Функция random как в оригинале
+        function random(N) {
+            return Math.floor(Math.random() * N);
+        }
+
+        // Функция для получения цвета пикселя (аналог getpixel)
+        function getPixelColor(x, y) {
+            const imageData = ctx.getImageData(x, y, 1, 1).data;
+            // Возвращаем 0 если черный (R=0, G=0, B=0), иначе 1
+            return (imageData[0] === 0 && imageData[1] === 0 && imageData[2] === 0) ? 0 : 1;
+        }
+
+        // Функция для установки пикселя (аналог putpixel)
+        function putPixel(x, y, color) {
+            if (color === 0) {
+                ctx.fillStyle = '#000000';
+            } else {
+                ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+            }
+            ctx.fillRect(x, y, 1, 1);
+        }
+
+        // Функция COLOR (создает объект с компонентами R,G,B)
+        function COLOR(R, G, B) {
+            return { r: R, g: G, b: B };
+        }
+
+        // Инициализация черного фона
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, 500, 500);
+
+        let x, y, R, G, B;
+
+        // Функция для выполнения одного шага анимации
+        function step() {
+            x = random(400);
+            y = random(300);
+            R = random(256);
+            G = random(256);
+            B = random(256);
+
+            if (getPixelColor(x, y) !== 0) {
+                putPixel(x, y, 0);
+            } else {
+                putPixel(x, y, COLOR(R, G, B));
+            }
+
+            // Продолжаем анимацию
+            requestAnimationFrame(step);
+        }
+
+        // Запускаем анимацию
+        step();
+
+        // Обработка нажатия клавиши (аналог kbhit)
+        document.addEventListener('keydown', function() {
+            // Останавливаем анимацию при нажатии любой клавиши
+            // Для полной остановки можно использовать cancelAnimationFrame
+            // Но в данном случае просто перезагружаем страницу для простоты
+            location.reload();
+        });
+    </script>
+</body>
+</html>

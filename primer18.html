@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моделирование движения тела в вязкой среде</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 3px solid #333;
+            border-radius: 10px;
+            background-color: #000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button.secondary {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+        }
+        
+        .info-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        
+        .info-item {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .info-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .params-panel {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            color: white;
+        }
+        
+        .params-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .param-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.95em;
+        }
+        
+        .phase {
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        
+        .code-block .keyword {
+            color: #f97583;
+        }
+        
+        .code-block .number {
+            color: #79b8ff;
+        }
+        
+        .code-block .comment {
+            color: #6a737d;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #718096;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏀 Движение тела в вязкой среде</h1>
+        <div class="subtitle">Моделирование падения шарика с учетом силы Стокса</div>
+        
+        <canvas id="canvas" width="800" height="600"></canvas>
+        
+        <div class="status-bar">
+            <span>⚡ Моделирование в реальном времени</span>
+            <span class="phase" id="phase">Полет вниз</span>
+            <span>🎯 Нажмите "Старт" для начала</span>
+        </div>
+        
+        <div class="controls">
+            <button onclick="startSimulation()">▶ Старт</button>
+            <button class="secondary" onclick="resetSimulation()">↺ Сброс</button>
+            <button onclick="runFullSimulation()">⚡ Полный расчет</button>
+        </div>
+        
+        <div class="params-panel">
+            <h3 style="margin:0; text-align:center;">Параметры модели</h3>
+            <div class="params-grid">
+                <div class="param-item">
+                    <div>Плотность (ρ)</div>
+                    <div style="font-size:1.2em; font-weight:bold;">11350 кг/м³</div>
+                </div>
+                <div class="param-item">
+                    <div>Радиус (R)</div>
+                    <div style="font-size:1.2em; font-weight:bold;">5·10⁻³ м</div>
+                </div>
+                <div class="param-item">
+                    <div>Вязкость (η)</div>
+                    <div style="font-size:1.2em; font-weight:bold;">0.022 Па·с</div>
+                </div>
+                <div class="param-item">
+                    <div>Нач. скорость</div>
+                    <div style="font-size:1.2em; font-weight:bold;">60 м/с</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <div class="info-item">
+                <div class="info-label">Макс. высота</div>
+                <div class="info-value" id="hmax">0.00 м</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Текущая высота</div>
+                <div class="info-value" id="currentH">0.00 м</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Скорость</div>
+                <div class="info-value" id="velocity">60.00 м/с</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Время</div>
+                <div class="info-value" id="time">0.00 с</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Ускорение</div>
+                <div class="info-value" id="accel">-9.81 м/с²</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Сила Стокса</div>
+                <div class="info-value" id="stokes">0.00 Н</div>
+            </div>
+        </div>
+        
+        <div class="code-block">
+            <span class="comment">// Физические константы</span><br>
+            <span class="keyword">const float</span> ro = 11350.;       <span class="comment">// плотность, кг/м³</span><br>
+            <span class="keyword">const float</span> R = 5.e-3;         <span class="comment">// радиус, м</span><br>
+            <span class="keyword">const float</span> eta = 0.022;       <span class="comment">// вязкость, Па·с</span><br>
+            <span class="keyword">const float</span> g = 9.81;          <span class="comment">// ускорение своб. падения</span><br>
+            <span class="keyword">float</span> m = ro*4./3.*M_PI*R*R*R; <span class="comment">// масса шарика</span><br>
+            <span class="keyword">float</span> v0 = 60;                  <span class="comment">// начальная скорость</span>
+        </div>
+        
+        <footer>
+            © К. Поляков, 1995-2009 | http://kpolyakov.spb.ru | страница 52
+        </footer>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Константы из программы
+        const ro = 11350;        // плотность, кг/м³
+        const R = 0.005;         // радиус, м (5e-3)
+        const eta = 0.022;       // вязкость, Па·с
+        const g = 9.81;          // ускорение свободного падения, м/с²
+        const v0 = 60;           // начальная скорость, м/с
+        
+        // Масштаб для отображения на экране
+        const K = 5;             // масштабный коэффициент (пикселей на метр)
+        
+        // Вычисляем массу шарика
+        const m = ro * (4/3) * Math.PI * R * R * R;
+        
+        // Параметры моделирования
+        const dt = 0.001;        // шаг по времени, с
+        const dtOut = 0.1;       // шаг вывода на экран, с
+        
+        // Переменные состояния
+        let v = v0;              // текущая скорость
+        let t = 0;               // текущее время
+        let h = 0;               // текущая высота
+        let hmax = 0;            // максимальная высота
+        let tOut = 0;            // время следующего вывода
+        let animationId = null;
+        let running = false;
+        let finished = false;
+        
+        // Константы для отображения
+        const X0 = 400;           // центр экрана по X
+        const Y0 = 590;           // уровень земли (низ экрана)
+        
+        //-----------------------------------------
+        // Вычисление силы Стокса
+        //-----------------------------------------
+        function stokesForce(v) {
+            return -6 * Math.PI * eta * R * v;
+        }
+        
+        //-----------------------------------------
+        // Вычисление ускорения
+        //-----------------------------------------
+        function acceleration(v) {
+            const Fc = stokesForce(v);
+            return Fc / m - g;
+        }
+        
+        //-----------------------------------------
+        // Рисование шарика
+        //-----------------------------------------
+        function drawBall(y, color) {
+            const ye = Y0 - K * y;  // экранная координата Y
+            
+            ctx.beginPath();
+            ctx.arc(X0, ye, 5, 0, 2 * Math.PI);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            if (color === '#FFFFFF') {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fill();
+            }
+        }
+        
+        //-----------------------------------------
+        // Очистка canvas
+        //-----------------------------------------
+        function clearCanvas() {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, 800, 600);
+            
+            // Рисуем шкалу высот
+            ctx.strokeStyle = '#333333';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            
+            for (let i = 0; i <= 10; i++) {
+                const y = i * 10; // метры
+                const ye = Y0 - K * y;
+                if (ye >= 0 && ye <= 600) {
+                    ctx.beginPath();
+                    ctx.moveTo(390, ye);
+                    ctx.lineTo(410, ye);
+                    ctx.strokeStyle = '#333333';
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = '#666666';
+                    ctx.font = '10px Arial';
+                    ctx.fillText(y + ' м', 415, ye - 2);
+                }
+            }
+            ctx.setLineDash([]);
+            
+            // Рисуем землю
+            ctx.strokeStyle = '#00FF00';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, Y0);
+            ctx.lineTo(800, Y0);
+            ctx.stroke();
+            ctx.fillStyle = '#00FF00';
+            ctx.font = '12px Arial';
+            ctx.fillText('Земля', 10, Y0 - 5);
+        }
+        
+        //-----------------------------------------
+        // Обновление информационной панели
+        //-----------------------------------------
+        function updateInfo() {
+            document.getElementById('hmax').textContent = hmax.toFixed(2) + ' м';
+            document.getElementById('currentH').textContent = h.toFixed(2) + ' м';
+            document.getElementById('velocity').textContent = v.toFixed(2) + ' м/с';
+            document.getElementById('time').textContent = t.toFixed(2) + ' с';
+            
+            const a = acceleration(v);
+            document.getElementById('accel').textContent = a.toFixed(2) + ' м/с²';
+            
+            const Fc = stokesForce(v);
+            document.getElementById('stokes').textContent = Fc.toFixed(4) + ' Н';
+            
+            if (h <= 0 && t > 0) {
+                document.getElementById('phase').textContent = '⏹ Достигнута земля';
+            } else if (v < 0) {
+                document.getElementById('phase').textContent = '⬇ Падение вниз';
+            } else {
+                document.getElementById('phase').textContent = '⬆ Подъем вверх';
+            }
+        }
+        
+        //-----------------------------------------
+        // Шаг моделирования
+        //-----------------------------------------
+        function step() {
+            if (!running) return;
+            
+            // Вычисляем силу Стокса и ускорение
+            const a = acceleration(v);
+            
+            // Обновляем высоту и скорость (метод Эйлера с квадратичным членом)
+            h += v * dt + 0.5 * a * dt * dt;
+            v += a * dt;
+            t += dt;
+            
+            // Обновляем максимальную высоту
+            if (h > hmax) hmax = h;
+            
+            // Проверка на достижение земли
+            if (h <= 0) {
+                h = 0;
+                running = false;
+                finished = true;
+                drawBall(h, '#FFFFFF');
+                updateInfo();
+                return;
+            }
+            
+            // Вывод на экран с заданным интервалом
+            if (t >= tOut) {
+                tOut += dtOut;
+                drawBall(h, '#FFFFFF');
+                updateInfo();
+                
+                // Небольшая задержка для визуализации
+                setTimeout(() => {
+                    if (running) {
+                        clearCanvas();
+                        drawBall(h, '#FFFFFF');
+                    }
+                }, 20);
+            }
+            
+            // Продолжаем моделирование
+            animationId = setTimeout(step, 1); // dt в реальном времени
+        }
+        
+        //-----------------------------------------
+        // Запуск моделирования
+        //-----------------------------------------
+        function startSimulation() {
+            if (running) return;
+            
+            if (finished || h <= 0) {
+                resetSimulation();
+            }
+            
+            running = true;
+            finished = false;
+            step();
+        }
+        
+        //-----------------------------------------
+        // Сброс моделирования
+        //-----------------------------------------
+        function resetSimulation() {
+            running = false;
+            finished = false;
+            if (animationId) {
+                clearTimeout(animationId);
+                animationId = null;
+            }
+            
+            v = v0;
+            t = 0;
+            h = 0;
+            hmax = 0;
+            tOut = 0;
+            
+            clearCanvas();
+            drawBall(h, '#FFFFFF');
+            updateInfo();
+        }
+        
+        //-----------------------------------------
+        // Полный расчет (без визуализации)
+        //-----------------------------------------
+        function runFullSimulation() {
+            running = false;
+            if (animationId) {
+                clearTimeout(animationId);
+                animationId = null;
+            }
+            
+            // Сброс параметров
+            v = v0;
+            t = 0;
+            h = 0;
+            hmax = 0;
+            
+            // Моделирование до падения
+            while (h >= 0) {
+                const a = acceleration(v);
+                h += v * dt + 0.5 * a * dt * dt;
+                v += a * dt;
+                t += dt;
+                
+                if (h > hmax) hmax = h;
+            }
+            
+            // Обновляем отображение
+            clearCanvas();
+            drawBall(0, '#FFFFFF');
+            updateInfo();
+            
+            // Выводим результаты в консоль и alert
+            const result = `Результаты моделирования:
+            Максимальная высота: ${hmax.toFixed(2)} м
+            Конечная скорость: ${Math.abs(v).toFixed(2)} м/с
+            Время падения: ${t.toFixed(2)} с`;
+            
+            console.log(result);
+            alert(result);
+        }
+        
+        //-----------------------------------------
+        // Инициализация
+        //-----------------------------------------
+        window.onload = () => {
+            clearCanvas();
+            drawBall(0, '#FFFFFF');
+            updateInfo();
+            
+            // Выводим параметры в консоль
+            console.log('Параметры модели:');
+            console.log(`Масса шарика: ${m.toExponential(4)} кг`);
+            console.log(`Сила тяжести: ${(m * g).toExponential(4)} Н`);
+        };
+        
+        //-----------------------------------------
+        // Соответствие оригинальному коду на C
+        //-----------------------------------------
+        /*
+        float ro = 11350., R = 5.e-3, eta = 0.022, g = 9.81;
+        float m = ro*4./3.*M_PI*R*R*R, v0 = 60;
+        float Fc, dt = 0.001, a, v, t, h, hmax = 0;
+        float dtOut = 0.1, tOut = 0;
+        
+        while (h >= 0) {
+            ye = 590 - K*h;
+            if (t > tOut) {
+                tOut += dtOut;
+                setcolor(WHITE); circle(xe, ye, 3);
+                delay(20);
+                setcolor(BLACK); circle(xe, ye, 3);
+            }
+            Fc = -6*M_PI*eta*R*v;
+            a = Fc/m - g;
+            h += v*dt + a*dt*dt;
+            v += a*dt;
+            t += dt;
+            if (h > hmax) hmax = h;
+        }
+        */
+    </script>
+</body>
+</html>
