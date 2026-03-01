@@ -1,11 +1,11 @@
-// Циклический сдвиг
+// Метод пузырька
 
 
 #include <stdio.h>
 const int N = 10;
 int main()
 {
-	int i, A[N], c;
+	int i, j, A[N], c;
 	
 	// Ввод элементов массива
     printf("Введите %d элементов массива:\n", N);
@@ -14,14 +14,20 @@ int main()
         scanf("%d", &A[i]);
     }
     
-    c=A[N-1];
+	for (i=0; i<N-1; i++)
+		for (j=N-2; j>=i;j--)
+			if (A[j]>A[j+1])
+			{
+				c=A[j]; A[j]=A[j+1];
+				A[j+1] = c;
+			}
+	
+	printf("\n Отсортированный массив: \n");
+	for (i=0; i<N; i++)
+		printf("%d ", A[i]);
+}
+
     
-    for (i=N-1; i>0; i--)
-    	A[i]=A[i-1];
-    A[0]=c;
-    printf("\n Результат: \n");
-    for (i=0; i<N; i++)
-    	printf("%d ", A[i]);
-	}
+   
     
    
