@@ -1,0 +1,21 @@
+graph TD
+    subgraph is_valid_attack
+        A[is_valid_attack] --> B{discard.size == 0?}
+        B -->|Да| C[return 1]
+        B -->|Нет| D[Цикл по картам на столе]
+        D --> E{value совпадает?}
+        E -->|Да| C
+        E -->|Нет| F[Следующая карта]
+        F --> D
+        D -->|Нет совпадений| G[return 0]
+    end
+
+    subgraph is_valid_defense
+        H[is_valid_defense] --> I{defense.suit == attack.suit 
+            AND defense.value > attack.value?}
+        I -->|Да| J[return 1]
+        I -->|Нет| K{defense.suit == trump.suit 
+            AND attack.suit != trump.suit?}
+        K -->|Да| J
+        K -->|Нет| L[return 0]
+    end

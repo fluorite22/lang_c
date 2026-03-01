@@ -1,0 +1,46 @@
+graph TD
+    A[player_turn] --> B{current_player == attacker?}
+    
+    B -->|Да атака| C[Запросить выбор карты]
+    C --> D{choice == 0?}
+    D -->|Да| E[Пропуск хода]
+    E --> F[current_player = 1 - current_player]
+    F --> Z[Возврат]
+    
+    D -->|Нет| G{choice валидный?}
+    G -->|Нет| C
+    G -->|Да| H[Проверить is_valid_attack]
+    H --> I{Атака валидная?}
+    I -->|Нет| C
+    I -->|Да| J[Добавить карту на стол]
+    J --> K[Удалить карту из руки]
+    K --> L[current_player = 1 - current_player]
+    L --> Z
+    
+    B -->|Нет защита| M[Показать атакующую карту]
+    M --> N[Запросить выбор]
+    N --> O{choice == 0?}
+    
+    O -->|Да взять| P[Игрок берёт все карты]
+    P --> Q[attacker = 1 - attacker]
+    Q --> R[current_player = attacker]
+    R --> S[sort_hand]
+    S --> Z
+    
+    O -->|Нет| T{choice валидный?}
+    T -->|Нет| N
+    T -->|Да| U[Проверить is_valid_defense]
+    U --> V{Защита валидная?}
+    V -->|Нет| N
+    V -->|Да| W[Добавить защиту на стол]
+    W --> X[Удалить карту из руки]
+    X --> Y{discard.size % 2 == 0?}
+    
+    Y -->|Да все отбито| AA[Очистить стол]
+    AA --> AB[attacker = 1 - attacker]
+    AB --> AC[current_player = attacker]
+    AC --> AD[draw_cards]
+    AD --> Z
+    
+    Y -->|Нет можно подкинуть| AE[current_player = attacker]
+    AE --> Z
