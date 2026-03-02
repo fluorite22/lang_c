@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Папоротник Барнсли</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000;
+        }
+        canvas {
+            border: 2px solid #fff;
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fernCanvas" width="800" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('fernCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Начальные координаты
+        let x = 0, y = 0;
+        let newx, newy;
+        let r;
+        
+        // Рисуем белым цветом
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        
+        // Основной цикл отрисовки
+        function drawFern() {
+            // Рисуем 50000 точек для хорошей детализации
+            for (let i = 0; i < 50000; i++) {
+                r = Math.random();
+                
+                if (r <= 0.1) {
+                    // Стебель
+                    newx = 0;
+                    newy = 0.16 * y;
+                } else if (r <= 0.86) {
+                    // Малые листья
+                    newx = 0.85 * x + 0.04 * y;
+                    newy = -0.04 * x + 0.85 * y + 1.6;
+                } else if (r <= 0.93) {
+                    // Левые листья
+                    newx = 0.2 * x - 0.26 * y;
+                    newy = 0.23 * x + 0.22 * y + 1.6;
+                } else {
+                    // Правые листья
+                    newx = -0.15 * x + 0.28 * y;
+                    newy = 0.26 * x + 0.24 * y + 0.44;
+                }
+                
+                x = newx;
+                y = newy;
+                
+                // Преобразование координат для отображения на canvas
+                const screenX = Math.round(x * 64 + 350);
+                const screenY = Math.round(530 - y * 48);
+                
+                // Проверка, что точка в пределах canvas
+                if (screenX >= 0 && screenX < canvas.width && screenY >= 0 && screenY < canvas.height) {
+                    ctx.fillStyle = '#90EE90'; // LightGreen
+                    ctx.fillRect(screenX, screenY, 1, 1);
+                }
+            }
+            
+            requestAnimationFrame(drawFern);
+        }
+        
+        drawFern();
+        
+        // Остановка при нажатии любой клавиши
+        window.addEventListener('keydown', () => {
+            // В браузере нельзя просто так закрыть окно, поэтому просто очищаем canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        });
+    </script>
+</body>
+</html>

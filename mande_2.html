@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Множество Мандельброта</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #111;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            border: 1px solid #444;
+            margin-top: 10px;
+        }
+        p {
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Множество Мандельброта (JavaScript)</h1>
+    <p>Кликните по изображению, чтобы перезапустить рендеринг.</p>
+    <canvas id="mandelbrot" width="600" height="400"></canvas>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('mandelbrot');
+            const ctx = canvas.getContext('2d');
+            let imageData = ctx.createImageData(canvas.width, canvas.height);
+
+            // Константы
+            const XMAX = canvas.width;
+            const YMAX = canvas.height;
+            const MAXCOUNT = 16;
+
+            // Координаты области множества Мандельброта
+            let left = -2.0;
+            let top = 1.25;
+            let xside = 3.5;  // Увеличено для лучшего отображения
+            let yside = -2.5;
+
+            // Масштабы для пересчёта координат экрана в комплексные
+            const xscale = xside / XMAX;
+            const yscale = yside / YMAX;
+
+            /**
+             * Функция для расчёта цвета пикселя на основе числа итераций.
+             */
+            function getColor(count) {
+                if (count === MAXCOUNT) {
+                    return [0, 0, 0]; // Чёрный для точек внутри множества
+                }
+                // Улучшенная палитра
+                const hue = (count * 15) % 360;
+                return hslToRgb(hue, 80, 50);
+            }
+
+            /**
+             * Преобразование HSL в RGB.
+             */
+            function hslToRgb(h, s, l) {
+                s /= 100;
+                l /= 100;
+
+                const c = (1 - Math.abs(2 * l - 1)) * s;
+                const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+                const m = l - c / 2;
+
+                let r = 0, g = 0, b = 0;
+
+                if (h >= 0 && h < 60) {
+                    [r, g, b] = [c, x, 0];
+                } else if (h < 120) {
+                    [r, g, b] = [x, c, 0];
+                } else if (h < 180) {
+                    [r, g, b] = [0, c, x];
+                } else if (h < 240) {
+                    [r, g, b] = [0, x, c];
+                } else if (h < 300) {
+                    [r, g, b] = [x, 0, c];
+                } else {
+                    [r, g, b] = [c, 0, x];
+                }
+
+                return [
+                    Math.round((r + m) * 255),
+                    Math.round((g + m) * 255),
+                    Math.round((b + m) * 255)
+                ];
+            }
+
+            /**
+             * Основной цикл рендеринга множества Мандельброта.
+             */
+            function renderMandelbrot() {
+                // Пересоздаём ImageData при каждом рендеринге
+                imageData = ctx.createImageData(XMAX, YMAX);
+
+                for (let y = 0; y < YMAX; y++) {
+                    for (let x = 0; x < XMAX; x++) {
+                        // Пересчёт координат экрана в комплексные числа
+                        const cx = x * xscale + left;
+                        const cy = y * yscale + top;
+
+                        let zx = 0, zy = 0;
+                        let count = 0;
+
+                        // Итеративный расчёт z = z^2 + c
+                        while (zx * zx + zy * zy < 4 && count < MAXCOUNT) {
+                    const tempx = zx * zx - zy * zy + cx;
+            zy = 2 * zx * zy + cy;
+            zx = tempx;
+            count++;
+        }
+
+        // Получение цвета на основе числа итераций
+        const [r, g, b] = getColor(count);
+
+        // Установка цвета пикселя в ImageData
+        const pixelIndex = (y * XMAX + x) * 4;
+        imageData.data[pixelIndex] = r;     // Красный
+        imageData.data[pixelIndex + 1] = g; // Зелёный
+        imageData.data[pixelIndex + 2] = b; // Синий
+        imageData.data[pixelIndex + 3] = 255; // Альфа (непрозрачность)
+            }
+        }
+
+        // Отрисовка на canvas
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+    // Запуск рендеринга после полной загрузки DOM
+    renderMandelbrot();
+
+    // Перезапуск рендеринга по клику
+    canvas.addEventListener('click', () => {
+        renderMandelbrot();
+    });
+});
+    </script>
+</body>
+</html>

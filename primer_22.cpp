@@ -1,32 +1,22 @@
-// Двоичный поиск в массиве
-// Работает только на отсортированном массиве
+// Просмотреть строку и заменить А на Б
 
 #include <stdio.h>
-const int N = 10;
 int main()
 {
-	int i, x, L=0, R=N-1, m, A[N],
-	flag =0;
-	// Ввод элементов массива
-    printf("Введите %d элементов массива:\n", N);
-    for (i = 0; i < N; i++) {
-        printf("A[%d] = ", i);
-        scanf("%d", &A[i]);
-    }
-	printf("Введите искомый элемент\n");
-	scanf("%d", &x);
-	while (L<=R) {
-		m=(L+R)/2;
-		if (A[m]==x) {
-			flag=1;
-			break;
-		}
-		if (x<A[m]) R=m-1;
-		else L=m+1;
+	char s[80];
+	int i;
+	printf("\n Введите строку \n");
+	gets(s);
+	i=0;
+	while (s[i]!='\0')
+	{
+		if (s[i]=='А')
+			s[i]='Б';
+		i++;
 	}
-	if (flag)
-		printf("Нашли: A[%d]=%d", m, A[m]);
-	else printf("Такого элемента нет");
+	puts("Результат: \n");
+	puts(s);
+	
 }
 
 
